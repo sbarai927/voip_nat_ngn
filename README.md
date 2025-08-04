@@ -29,6 +29,7 @@
 9. [Advanced Debugging Cookbook](#advanced-debugging-cookbook)
 10. [One-Click Sandbox (Vagrant + Docker)](#one-click-sandbox)
 11. [Credits](#credits)
+12. [Contact](#contact)
 </details>
 
 ## Objective
@@ -233,5 +234,11 @@ commit && save
 
 ## Credits
 
-- Course sheets © Prof. A. Grebe, TH Köln – see milestones/.
+- Course sheets and instructor © Prof. Dr. A. Grebe, TH Köln – see milestones/.
 - Config snippets adapted from Mastering Asterisk (Packt 2020).
+
+## Contact
+
+For any questions or issues, please contact:
+ - Suvendu Barai
+ - Email: suvendu.barai@smail.th-koeln.de

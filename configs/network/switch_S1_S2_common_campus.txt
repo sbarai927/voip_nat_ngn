@@ -1,0 +1,58 @@
+!
+! =====================  CAMPUS SWITCH TEMPLATE  =====================
+!  • Basic hardening
+!  • Port allocation
+!  • SPAN / mirror-port configuration on S2 for Milestone 2
+!
+hostname <SET_ON_EACH_SWITCH>
+no ip domain-lookup
+!
+enable secret cisco
+banner motd #  Unauthorized access is prohibited!  #
+!
+! ---------- PORT DESCRIPTIONS ----------
+! Example for S1 (inside LAN-A)
+interface FastEthernet0/1
+ description *** PC-A (Asterisk) ***
+ switchport mode access
+!
+interface FastEthernet0/2
+ description *** IP Phone A (3001) ***
+ switchport mode access
+!
+interface GigabitEthernet0/1
+ description *** Uplink to Router R1 G0/0/1 ***
+ switchport mode access
+!
+! Example for S2 (inside LAN-C)
+!  - Fa0/2  : IP Phone B (3002)
+!  - Fa0/24 : Monitor PC (SPAN destination)
+!
+interface FastEthernet0/2
+ description *** IP Phone B (3002) ***
+ switchport mode access
+!
+interface FastEthernet0/24
+ description *** MONITOR-PC (SPAN destination) ***
+ switchport mode access
+!
+interface GigabitEthernet0/1
+ description *** Uplink to Router R2 G0/0/0 ***
+ switchport mode access
+!
+! ---------- SPAN / Port Mirroring  (ONLY on Switch S2) ----------
+!  Monitor VoIP traffic in Milestone 2
+!
+monitor session 1 source interface FastEthernet0/2
+monitor session 1 destination interface FastEthernet0/24
+!
+! ---------- AUX ----------
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line vty 0 4
+ password cisco
+ login
+ transport input telnet ssh
+!
+end

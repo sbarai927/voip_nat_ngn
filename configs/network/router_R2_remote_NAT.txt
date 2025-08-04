@@ -1,0 +1,49 @@
+!
+! =====================  ROUTER R2  – Remote site (LAN-C)  =====================
+!  • LAN-C gateway (10.3.2.0/24)
+!  • Serial link to R1 (LAN-B 10.3.1.0/24)
+!  • Provides NAT (PAT/overload) for LAN-C   – MS3
+!
+hostname R2
+no ip domain-lookup
+enable secret cisco
+banner motd #  Remote-site router. Unauthorized access forbidden!  #
+!
+! ---------- INTERFACES ----------
+interface GigabitEthernet0/0/0
+ description *** LAN-C to Switch S2 ***
+ ip address 10.3.2.1 255.255.255.0
+ ip nat inside
+ no shutdown
+!
+interface Serial0/1/0
+ description *** Serial to R1 (LAN-B) ***
+ ip address 10.3.1.2 255.255.255.0
+ ip nat outside
+ no shutdown
+!
+! ---------- ROUTING ----------
+router ospf 1
+ router-id 2.2.2.2
+ network 10.3.0.0 0.0.255.255 area 0
+!
+! Default route via R1 (towards provider core)
+ip route 0.0.0.0 0.0.0.0 Serial0/1/0
+!
+! ---------- NAT ----------
+! Limit NAT to LAN-C
+access-list 1 permit 10.3.2.0 0.0.0.255
+!
+! NAT overload towards R1 (Serial0/1/0)
+ip nat inside source list 1 interface Serial0/1/0 overload
+!
+! ---------- AUX ----------
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line vty 0 4
+ password cisco
+ login
+ transport input ssh
+!
+end

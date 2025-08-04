@@ -1,0 +1,74 @@
+!
+! =====================  ROUTER R1  – Team 3  =====================
+!  • LAN-A gateway (10.3.0.0/24)
+!  • Serial link to R2 (LAN-B 10.3.1.0/24)
+!  • G0/0/0 first used for Internet (MS1-3), later repurposed
+!    as inter-provider link (LAN-X 10.32.0.0/24) in MS4
+!
+hostname R1
+no ip domain-lookup
+!
+! ---------- USER & SECURITY ----------
+enable secret cisco
+service password-encryption
+banner motd #  Unauthorized access is prohibited!  #
+!
+! ---------- INTERFACES ----------
+! LAN-A
+interface GigabitEthernet0/0/1
+ description *** LAN-A to Switch S1 ***
+ ip address 10.3.0.1 255.255.255.0
+ ip nat inside
+ no shutdown
+!
+! Serial link to R2  (DCE side – provides clocking)
+interface Serial0/1/0
+ description *** Serial to R2 (LAN-B) ***
+ ip address 10.3.1.1 255.255.255.0
+ clock rate 2000000
+ ip nat inside
+ no shutdown
+!
+! OUTSIDE link – two phases ---------------------------------
+! ---- PHASE 1 (MS1-3): Internet uplink (public IP) ----
+! interface GigabitEthernet0/0/0
+!  description *** Public uplink to DN.Lab switch ***
+!  ip address 139.6.19.132 255.255.255.224
+!  ip nat outside
+!  no shutdown
+!
+! ---- PHASE 2 (MS4): Inter-provider LAN-X link to partner R1 ----
+interface GigabitEthernet0/0/0
+ description *** Interconnect to Team-2 R1 (LAN-X) ***
+ ip address 10.32.0.1 255.255.255.0
+ no ip nat outside           ! NAT removed for MS4
+ no shutdown
+!
+! ---------- ROUTING ----------
+router ospf 1
+ router-id 3.3.3.3
+ network 10.3.0.0 0.0.255.255 area 0        ! advertises LAN-A, LAN-B
+!
+! Default route (Internet – used only in MS1-3)
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0/0
+!
+! Static route to LAN-C (MS1-2) – **REMOVED in MS3 when NAT introduced**
+! ip route 10.3.2.0 255.255.255.0 Serial0/1/0
+!
+! ---------- NAT  (MS1-3 only) ----------
+! ACL matching entire Class-B private space 10.3.0.0/16
+access-list 1 permit 10.3.0.0 0.0.255.255
+!
+! NAT overload towards Internet  (commented out in MS4)
+! ip nat inside source list 1 interface GigabitEthernet0/0/0 overload
+!
+! ---------- AUX ----------
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+line vty 0 4
+ password cisco
+ login
+ transport input ssh
+!
+end
